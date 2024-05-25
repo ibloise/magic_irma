@@ -4,7 +4,6 @@ import shutil
 from Bio import SeqIO
 import files
 
-
 class IrmaRenamer(files.File):
     def __init__(self, filename):
         super().__init__(filename)

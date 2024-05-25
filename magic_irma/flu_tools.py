@@ -1,16 +1,17 @@
-import argparse
-import os
+mport os
 import re
 import pandas as pd
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
-from files import FASTA_FILE, FASTA_EXT
+import argparse
 
 A_TYPE = "A"
 B_TYPE = "B"
 
+FASTA_FILE = "fasta"
+FASTA_EXT  = ".fasta"
 PB2 = "PB2"
 PB1 = "PB1"
 PA = "PA"
@@ -100,7 +101,7 @@ class FluSegment:
     @classmethod
     def read_file(cls, file):
         with open(file, "r") as f:
-            records = list(SeqIO.parse(f, FASTA_FILE))
+            records = list(SeqIO.parse(f, "fasta"))
         if len(records) > 1:
             raise ValueError("Only single-fasta segment are admitted")
         return cls.from_record(records[0])
@@ -147,7 +148,7 @@ class FluSegmentCollection(Collection):
     def from_fasta(cls, fasta):
 
         with open(fasta, "r") as file:
-            records = list(SeqIO.parse(file, FASTA_FILE))
+            records = list(SeqIO.parse(file, "fasta"))
         
         instance = cls()
         for record in records:
@@ -295,8 +296,11 @@ class FluGenomeRecordCreator:
     def create_record(segment_collection):
         records = []
         for segment in segment_collection:
+            id = f"{segment.id}_{segment.type}_{segment.segment}"
+            if segment.segment_type:
+                id = f"{id}_{segment.segment_type}"
             record = SeqRecord(Seq(segment.sequence),
-                               id=f"{segment.id}_{segment.segment}", description="")
+                               id=id, description="")
             records.append(record)
         return records
     
@@ -334,6 +338,8 @@ class FluGenomeFileWriter:
 def main():
     parser = argparse.ArgumentParser(description="Renombra archivos de IRMA")
     parser.add_argument("-f", "--files", help="Archivos que se van a utilizar", nargs="+", required=True)
+    parser.add_argument("-o", "--out_dir")
+    parser.add_argument("-m", "--mode", choices=["samples", "segments"])
     args = parser.parse_args()
     
     collection = FluSegmentCollection.from_list_files(args.files)
@@ -341,27 +347,17 @@ def main():
 
     genome_collection = collection.return_genomes()
 
-    segments = genome_collection.to_id_dict()
+    if args.mode == "samples":
+        segments = genome_collection.to_id_dict()
+    else:
+        segments = genome_collection.to_segment_dict()
+
     file_writer = FastaFileWriter()
     flu_writer = FluGenomeFileWriter(file_writer)
-    flu_writer.write_fasta_from_dict(segments, "prueba2")
+    flu_writer.write_fasta_from_dict(segments, args.out_dir)
     print(FluGenomeSummarizer.bulk_df_summarize(genome_collection))
 
 
-
-def main():
-    parser = argparse.ArgumentParser(description="Renombra archivos de IRMA")
-    parser.add_argument("-f", "--files", help="Archivos que se van a utilizar", nargs="+", required=True)
-    args = parser.parse_args()
-    
-    collection = FluSegmentCollection.from_list_files(args.files)
-
-
-    genome_collection = collection.return_genomes()
-
-    segments = genome_collection.to_id_dict()
-    FluGenomeWriter.write_fasta_from_dict(segments, out_dir="prueba")
-    print(FluGenomeSummarizer.bulk_df_summarize(genome_collection))
 
 if __name__ == "__main__":
     main()

@@ -15,6 +15,7 @@ RENAME_PATTERNS = [
     BAM_FILE
 ]
 
+
 def extract_sample_id(string, sep="_", pos=0):
     """Devuelve el id de muestra de un esquema idmuestra_loquesea"""
     return string.split(sep)[pos]
