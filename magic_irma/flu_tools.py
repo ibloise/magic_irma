@@ -1,4 +1,4 @@
-mport os
+import os
 import re
 import pandas as pd
 from Bio.Seq import Seq
@@ -6,57 +6,48 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 import argparse
-
-A_TYPE = "A"
-B_TYPE = "B"
-
-FASTA_FILE = "fasta"
-FASTA_EXT  = ".fasta"
-PB2 = "PB2"
-PB1 = "PB1"
-PA = "PA"
-NP = "NP"
-HA = "HA"
-NA = "NA"
-M = "MP"
-NS = "NS"
+import constants
 
 
 SEGMENTS = [
-    PB2,
-    PB1,
-    PA,
-    NP,
-    HA,
-    NA,
-    M,
-    NS
+    constants.PB2,
+    constants.PB1,
+    constants.PA,
+    constants.NP,
+    constants.HA,
+    constants.NA,
+    constants.M,
+    constants.NS
 ]
+
 class FluSegment:
 
+    A_TYPE = constants.A_TYPE
+    B_TYPE = constants.B_TYPE
+
     SEGMENTS_METADATA = {
-        PB2: {
+        constants.PB2: {
             "name":  "PB2"
         },
-        PB1: {
+        constants.PB1: {
             "name": "PB1"
         },
-        PA: {
+        constants.PA: {
             "name": "PA"
         },
-        NP: {
+        constants.NP: {
             "name": "Nucleoprotein"
         },
-        HA: {
+        constants.HA: {
             "name": "Hemagglutinin"
         },
-        NA: {
+        constants.NA: {
             "name": "Neuraminidase"
         },
-        M: {
+        constants.M: {
             "name": "Matrix"
         },
-        NS: {
+        constants.NS: {
             "name": "NS"
         }
     }
@@ -66,7 +57,7 @@ class FluSegment:
         self.segment = segment
         self.type = flu_type
 
-        if segment in [NA, HA] and flu_type == A_TYPE:
+        if segment in [constants.NA, constants.HA] and flu_type == self.A_TYPE:
             self.segment_type = segment_type
         else:
             self.segment_type = None
@@ -190,9 +181,9 @@ class FluGenome:
         self.type = list(types)[0]
     
     def _get_subtype(self):
-        if self.type == A_TYPE:
-            _ha = self._get_segment_type(HA)
-            _na = self._get_segment_type(NA)
+        if self.type == self.A_TYPE:
+            _ha = self._get_segment_type(constants.HA)
+            _na = self._get_segment_type(constants.NA)
             self.subtype = f"H{_ha}N{_na}"
         else:
             self.subtype = None
@@ -319,7 +310,7 @@ class FileWriterInterface:
 class FastaFileWriter(FileWriterInterface):
     def write(self, records, dest_file):
         with open(dest_file, 'w') as file:
-            SeqIO.write(records, file, FASTA_FILE)
+            SeqIO.write(records, file, constants.FASTA_FILE)
 
 class FluGenomeFileWriter:
     def __init__(self, file_writer: FileWriterInterface):
@@ -332,7 +323,7 @@ class FluGenomeFileWriter:
             os.mkdir(out_dir)
 
         for key, value in record_dict.items():
-            dest_file = os.path.join(out_dir, f"{key}{FASTA_EXT}")
+            dest_file = os.path.join(out_dir, f"{key}{constants.FASTA_EXT}")
             self.file_writer.write(value, dest_file)
 
 def main():
@@ -355,9 +346,3 @@ def main():
     file_writer = FastaFileWriter()
     flu_writer = FluGenomeFileWriter(file_writer)
     flu_writer.write_fasta_from_dict(segments, args.out_dir)
-    print(FluGenomeSummarizer.bulk_df_summarize(genome_collection))
-
-
-
-if __name__ == "__main__":
-    main()

@@ -2,19 +2,15 @@
 import argparse
 import subprocess
 from files import FastqCollection
+import constants
 
-IRMA_CMD = "IRMA"
-FORWARD_VALUE = "_R1"
-REVERSE_VALUE = "_R2"
-SINGLE_READS = "single"
-PAIRED_READS = "paired"
 
 
 # Hay que meterle un log a esto
 class IrmaBulk:
 
-    SINGLE_READS = "single"
-    PAIRED_READS = "paired"
+    SINGLE_READS = constants.SINGLE_READS
+    PAIRED_READS = constants.PAIRED_READS
 
     def __init__(self, 
                  module, file_list, reads_type, irma_cmd = "IRMA",
@@ -70,34 +66,3 @@ class IrmaBulk:
     def run(self):
         for cmd in self._cmd_list:
             subprocess.run(cmd)
-
-
-
-def main():
-
-    #argparser
-
-    parser = argparse.ArgumentParser(description="Ejecuta CDC-IRMA en bucle con el módulo especificado")
-    parser.add_argument("-f", "--files", help="Archivos que se van a utilizar", nargs="+", required=True)
-    parser.add_argument("-m", "--module", help="Modulo que debe usar IRMA", required=True)
-    parser.add_argument("-r", "--reads", choices=[SINGLE_READS, PAIRED_READS], default=SINGLE_READS,
-                        help="Tipo de lecturas introducidas")
-    parser.add_argument("--forward_pattern", help="Patrón de la lectura forward (solo para paired)",
-                        default=FORWARD_VALUE)
-    parser.add_argument("--reverse_pattern", help="Patrón para la lectura reverse (solo en paried)",
-                        default=REVERSE_VALUE)
-    parser.add_argument("--irma_cmd", default=IRMA_CMD)
-    
-    args = parser.parse_args()
-
-    # Declaramos el bulker:
-
-    if not args.files:
-        raise ValueError("Es necesario pasar archivos")
-    
-    irma_bulker = IrmaBulk(args.module, args.files, args.reads, args.irma_cmd, args.forward_pattern, args.reverse_pattern)
-
-    irma_bulker.run()
-
-if __name__ == "__main__":
-    main()

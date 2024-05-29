@@ -1,13 +1,5 @@
 import os
-
-FASTQ_FILE = "fastq"
-FASTA_FILE = "fasta"
-VCF_FILE = "vcf"
-BAM_FILE = "bam"
-FASTQ_EXT = ".fastq"
-FASTA_EXT = ".fasta"
-FQ_EXT = ".fq"
-GZ_EXT = ".gz"
+import constants
 
 class File:
 
@@ -39,9 +31,9 @@ class File:
 
 
 class FastqFile(File):
-    FASTQ_EXT = FASTQ_EXT
-    FQ_EXT = FQ_EXT
-    GZ_EXT = GZ_EXT
+    FASTQ_EXT = constants.FASTQ_EXT
+    FQ_EXT = constants.FQ_EXT
+    GZ_EXT = constants.GZ_EXT
 
     @File.name.setter
     def name(self, filename):
