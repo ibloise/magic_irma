@@ -1,11 +1,13 @@
 import os
-import constants
+import magic_irma.constants as constants
 
 class File:
 
-    def __init__(self, filename):
+    def __init__(self, filename, out_dir=None):
 
         self.name = filename
+
+        self.out_dir = out_dir if out_dir else os.getcwd()
 
     @property
     def name(self):
@@ -19,7 +21,7 @@ class File:
         self.compressed = self._is_compressed(filename)
         self.full_name = os.path.join(self.path, self._name)
 
-
+    #Abstract method...
     def _is_compressed(self, filename):
         return False
 

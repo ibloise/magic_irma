@@ -6,7 +6,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 import argparse
-import constants
+import magic_irma.constants as constants
 
 
 SEGMENTS = [
@@ -158,6 +158,8 @@ class FluSegmentCollection(Collection):
         return ins_global
 
 class FluGenome:
+    A_TYPE = constants.A_TYPE
+    B_TYPE = constants.B_TYPE
 
     def __init__(self, *segments) -> None:
         # Comprobamos que los segmentos tienen un id único:
@@ -290,7 +292,7 @@ class FluGenomeRecordCreator:
             id = f"{segment.id}_{segment.type}_{segment.segment}"
             if segment.segment_type:
                 id = f"{id}_{segment.segment_type}"
-            record = SeqRecord(Seq(segment.sequence),
+            record = SeqRecord(segment.sequence,
                                id=id, description="")
             records.append(record)
         return records
@@ -318,31 +320,10 @@ class FluGenomeFileWriter:
 
     def write_fasta_from_dict(self, segment_dict, out_dir=""):
         record_dict = FluGenomeRecordCreator.create_record_dict(segment_dict)
-
+        out_dir = out_dir if out_dir else os.getcwd()
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
 
         for key, value in record_dict.items():
             dest_file = os.path.join(out_dir, f"{key}{constants.FASTA_EXT}")
             self.file_writer.write(value, dest_file)
-
-def main():
-    parser = argparse.ArgumentParser(description="Renombra archivos de IRMA")
-    parser.add_argument("-f", "--files", help="Archivos que se van a utilizar", nargs="+", required=True)
-    parser.add_argument("-o", "--out_dir")
-    parser.add_argument("-m", "--mode", choices=["samples", "segments"])
-    args = parser.parse_args()
-    
-    collection = FluSegmentCollection.from_list_files(args.files)
-
-
-    genome_collection = collection.return_genomes()
-
-    if args.mode == "samples":
-        segments = genome_collection.to_id_dict()
-    else:
-        segments = genome_collection.to_segment_dict()
-
-    file_writer = FastaFileWriter()
-    flu_writer = FluGenomeFileWriter(file_writer)
-    flu_writer.write_fasta_from_dict(segments, args.out_dir)

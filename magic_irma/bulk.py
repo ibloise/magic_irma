@@ -1,10 +1,6 @@
-#!/usr/bin/env python
-import argparse
 import subprocess
-from files import FastqCollection
-import constants
-
-
+from magic_irma.files import FastqCollection
+import magic_irma.constants as constants
 
 # Hay que meterle un log a esto
 class IrmaBulk:
